@@ -172,6 +172,11 @@ a { color: var(--accent); text-decoration: none; }
       <input type="password" id="wpPass" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx" />
       <div class="hint">WP-Admin → Benutzer → Profil → Application Passwords → Neu generieren</div>
     </div>
+    <div class="form-group">
+      <label>Calendly Personal Access Token</label>
+      <input type="password" id="calendlyPat" placeholder="eyJra..." />
+      <div class="hint">Calendly → Einstellungen → Integrationen → API & Webhooks → Personal Access Token generieren</div>
+    </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeConfig()">Abbrechen</button>
       <button class="btn-primary" onclick="saveConfig()">Speichern &amp; verbinden</button>
@@ -218,15 +223,15 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Neue Leads</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> CF7 → CRM nicht verbunden</div>
+    <div class="card-title"><span class="dot grey" id="leadsDot"></span>Neue Leads</div>
+    <div class="card-value" id="newLeadsVal" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="newLeadsSub"><span class="tag grey">FEHLT</span> CF7 → CRM nicht verbunden</div>
   </div>
 
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Neue Termine</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> Calendly API nicht verbunden</div>
+    <div class="card-title"><span class="dot grey" id="termineDot"></span>Neue Termine</div>
+    <div class="card-value" id="termineVal" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="termineSub"><span class="tag grey">FEHLT</span> Calendly API nicht verbunden</div>
   </div>
 
   <div class="card">
@@ -337,15 +342,15 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Impressionen</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> GSC API nicht verbunden</div>
+    <div class="card-title"><span class="dot grey" id="gscImprDot"></span>Impressionen</div>
+    <div class="card-value" id="gscImprVal" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="gscImprSub"><span class="tag grey">FEHLT</span> <a href="https://search.google.com/search-console" target="_blank" style="color:var(--muted)">GSC öffnen →</a></div>
   </div>
 
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Klicks</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> GSC API nicht verbunden</div>
+    <div class="card-title"><span class="dot grey" id="gscKlicksDot"></span>Klicks</div>
+    <div class="card-value" id="gscKlicksVal" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="gscKlicksSub"><span class="tag grey">FEHLT</span> GSC OAuth — manuell eintragen</div>
   </div>
 
   <div class="card wide2">
@@ -382,9 +387,9 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>LinkedIn Reichweite</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> LinkedIn API nicht verbunden</div>
+    <div class="card-title"><span class="dot grey" id="liDot"></span>LinkedIn Reichweite</div>
+    <div class="card-value" id="liVal" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="liSub"><span class="tag grey">FEHLT</span> <a href="https://www.linkedin.com/analytics/" target="_blank" style="color:var(--muted)">LinkedIn Analytics →</a></div>
   </div>
 
   <!-- ═══ SECTION: GEO / AI ═══ -->
@@ -450,28 +455,28 @@ a { color: var(--accent); text-decoration: none; }
   <!-- ═══ SECTION: REVENUE ═══ -->
   <div class="section-header">
     <h2>💰 REVENUE &amp; LEADS</h2>
-    <span class="badge">Manuell (LEAD-ERFOLG Format)</span>
+    <span class="badge" id="revenueBadge">Lade Daten…</span>
   </div>
 
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Leads 7 Tage</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> Kein CF7-CRM-Sync</div>
+    <div class="card-title"><span class="dot grey" id="leads7Dot"></span>Leads 7 Tage</div>
+    <div class="card-value" id="leads7Val" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="leads7Sub"><div class="loading"><div class="spinner"></div> prüft CF7…</div></div>
   </div>
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Erstgespräche</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> Calendly API nicht verbunden</div>
+    <div class="card-title"><span class="dot grey" id="erstDot"></span>Erstgespräche (7T)</div>
+    <div class="card-value" id="erstVal" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="erstSub"><span class="tag grey">FEHLT</span> Calendly PAT konfigurieren</div>
   </div>
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Umsatz Monat</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">FEHLT</span> Manueller Eintrag in Post 32449</div>
+    <div class="card-title"><span class="dot grey" id="umsatzDot"></span>Umsatz Monat</div>
+    <div class="card-value" id="umsatzVal" style="color:var(--muted)">—</div>
+    <div class="card-sub" id="umsatzSub"><div class="loading"><div class="spinner"></div> lade Post 32449…</div></div>
   </div>
   <div class="card">
-    <div class="card-title"><span class="dot grey"></span>Conversion Rate</div>
-    <div class="card-value" style="color:var(--muted)">—</div>
-    <div class="card-sub"><span class="tag grey">UNSICHER</span> GA4/GTM Trigger-Fehler aktiv</div>
+    <div class="card-title"><span class="dot yellow"></span>Conversion Rate</div>
+    <div class="card-value" style="color:var(--yellow)">⚠️</div>
+    <div class="card-sub"><span class="tag yellow">BEFUND</span> GA4/GTM feuert auf page_view — <a href="https://tagmanager.google.com/" target="_blank" style="color:var(--muted)">GTM öffnen →</a></div>
   </div>
 
   <!-- ═══ SECTION: DATA SOURCES ═══ -->
@@ -497,7 +502,7 @@ a { color: var(--accent); text-decoration: none; }
     <div class="source-list">
       <div class="source-item"><span class="dot grey"></span> <span>Google Search Console API</span> <span class="verified-badge m">FEHLT</span></div>
       <div class="source-item"><span class="dot grey"></span> <span>LinkedIn Analytics API</span> <span class="verified-badge m">FEHLT</span></div>
-      <div class="source-item"><span class="dot grey"></span> <span>Calendly API</span> <span class="verified-badge m">FEHLT</span></div>
+      <div class="source-item"><span class="dot" id="calendlyDot" style="background:var(--muted)"></span> <span>Calendly API</span> <span class="verified-badge m" id="calendlyBadge">prüft…</span></div>
       <div class="source-item"><span class="dot grey"></span> <span>GA4 API</span> <span class="verified-badge m">FEHLT</span></div>
       <div class="source-item"><span class="dot grey"></span> <span>CF7 → CRM / Email</span> <span class="verified-badge m">FEHLT</span></div>
       <div class="source-item"><span class="dot yellow"></span> <span>WP REST API CORS (brackmedia.ch → GitHub)</span> <span class="verified-badge u">SETUP NÖTIG</span></div>
@@ -516,7 +521,8 @@ function getConfig() {
   return {
     asanaPat: localStorage.getItem('bm_asana_pat') || '',
     wpUser: localStorage.getItem('bm_wp_user') || '',
-    wpPass: localStorage.getItem('bm_wp_pass') || ''
+    wpPass: localStorage.getItem('bm_wp_pass') || '',
+    calendlyPat: localStorage.getItem('bm_calendly_pat') || ''
   };
 }
 
@@ -524,9 +530,11 @@ function saveConfig() {
   const pat = document.getElementById('asanaPat').value.trim();
   const user = document.getElementById('wpUser').value.trim();
   const pass = document.getElementById('wpPass').value.trim();
+  const cal = document.getElementById('calendlyPat').value.trim();
   if (pat) localStorage.setItem('bm_asana_pat', pat);
   if (user) localStorage.setItem('bm_wp_user', user);
   if (pass) localStorage.setItem('bm_wp_pass', pass);
+  if (cal) localStorage.setItem('bm_calendly_pat', cal);
   closeConfig();
   loadAll();
 }
@@ -536,6 +544,7 @@ function openConfig() {
   if (cfg.asanaPat) document.getElementById('asanaPat').value = cfg.asanaPat;
   if (cfg.wpUser) document.getElementById('wpUser').value = cfg.wpUser;
   if (cfg.wpPass) document.getElementById('wpPass').value = cfg.wpPass;
+  if (cfg.calendlyPat) document.getElementById('calendlyPat').value = cfg.calendlyPat;
   document.getElementById('configModal').classList.remove('hidden');
 }
 
@@ -644,9 +653,201 @@ async function loadAsanaTasks() {
     document.getElementById('asanaDot').style.background = 'var(--red)';
     document.getElementById('asanaBadge').className = 'verified-badge m';
     document.getElementById('asanaBadge').textContent = 'FEHLER';
-    taskList.innerHTML = `<div style="color:var(--red);font-size:12px;padding:10px;">Asana-Fehler: ${e.message}. PAT prüft!</div>`;
+    taskList.innerHTML = `<div style="color:var(--red);font-size:12px;padding:10px;">Asana-Fehler: ${e.message}. PAT prüfen.</div>`;
     document.getElementById('openTasks').textContent = '!';
     document.getElementById('urgentTask').textContent = 'Verbindung fehlgeschlagen';
+  }
+}
+
+// ─── CALENDLY ─────────────────────────────────────────────
+async function loadCalendly() {
+  const cfg = getConfig();
+  const dot = id => document.getElementById(id);
+
+  if (!cfg.calendlyPat) {
+    dot('calendlyDot').style.background = 'var(--muted)';
+    dot('calendlyBadge').className = 'verified-badge m';
+    dot('calendlyBadge').textContent = 'FEHLT';
+    dot('termineDot').className = 'dot grey';
+    dot('termineVal').textContent = '—';
+    dot('termineSub').innerHTML = '<span class="tag grey">FEHLT</span> Calendly PAT im ⚙️ Setup eintragen';
+    dot('erstDot').className = 'dot grey';
+    dot('erstVal').textContent = '—';
+    dot('erstSub').innerHTML = '<span class="tag grey">FEHLT</span> Calendly PAT im ⚙️ Setup eintragen';
+    return;
+  }
+
+  try {
+    // Get user info
+    const meR = await fetch('https://api.calendly.com/users/me', {
+      headers: { 'Authorization': 'Bearer ' + cfg.calendlyPat, 'Content-Type': 'application/json' }
+    });
+    if (!meR.ok) throw new Error('HTTP ' + meR.status);
+    const me = await meR.json();
+    const userUri = me.resource.uri;
+
+    const now = new Date();
+    const todayStr = now.toISOString();
+    const next7 = new Date(now.getTime() + 7*24*60*60*1000).toISOString();
+    const past7 = new Date(now.getTime() - 7*24*60*60*1000).toISOString();
+
+    // Upcoming 7 days (Neue Termine)
+    const upR = await fetch(
+      `https://api.calendly.com/scheduled_events?user=${encodeURIComponent(userUri)}&min_start_time=${todayStr}&max_start_time=${next7}&status=active&count=100`,
+      { headers: { 'Authorization': 'Bearer ' + cfg.calendlyPat } }
+    );
+    const upData = await upR.json();
+    const upcoming = (upData.collection || []).length;
+
+    // Past 7 days (Erstgespräche completed)
+    const pastR = await fetch(
+      `https://api.calendly.com/scheduled_events?user=${encodeURIComponent(userUri)}&min_start_time=${past7}&max_start_time=${todayStr}&status=active&count=100`,
+      { headers: { 'Authorization': 'Bearer ' + cfg.calendlyPat } }
+    );
+    const pastData = await pastR.json();
+    const past = (pastData.collection || []).length;
+
+    // Update UI — Neue Termine
+    dot('termineDot').className = 'dot ' + (upcoming > 0 ? 'green' : 'yellow');
+    dot('termineVal').style.color = upcoming > 0 ? 'var(--green)' : 'var(--yellow)';
+    dot('termineVal').textContent = upcoming;
+    dot('termineSub').innerHTML = upcoming === 0
+      ? '<span class="tag yellow">LEER</span> Keine Termine nächste 7 Tage'
+      : `<span class="tag green">LIVE</span> nächste 7 Tage`;
+
+    // Update UI — Erstgespräche
+    dot('erstDot').className = 'dot ' + (past > 0 ? 'green' : 'yellow');
+    dot('erstVal').style.color = past > 0 ? 'var(--green)' : 'var(--muted)';
+    dot('erstVal').textContent = past;
+    dot('erstSub').innerHTML = `<span class="tag green">LIVE</span> letzte 7 Tage`;
+
+    // Data sources badge
+    dot('calendlyDot').style.background = 'var(--green)';
+    dot('calendlyDot').className = 'dot green';
+    dot('calendlyBadge').className = 'verified-badge v';
+    dot('calendlyBadge').textContent = 'LIVE';
+
+  } catch(e) {
+    dot('calendlyDot').style.background = 'var(--red)';
+    dot('calendlyBadge').className = 'verified-badge m';
+    dot('calendlyBadge').textContent = 'FEHLER';
+    dot('termineSub').innerHTML = `<span class="tag red">FEHLER</span> ${e.message}`;
+    dot('erstSub').innerHTML = `<span class="tag red">FEHLER</span> ${e.message}`;
+  }
+}
+
+// ─── WP REVENUE (Post 32449) ──────────────────────────────
+async function loadRevenue() {
+  const cfg = getConfig();
+  const dot = id => document.getElementById(id);
+
+  if (!cfg.wpUser || !cfg.wpPass) {
+    dot('umsatzDot').className = 'dot grey';
+    dot('umsatzVal').textContent = '—';
+    dot('umsatzSub').innerHTML = '<span class="tag grey">FEHLT</span> WP Credentials konfigurieren';
+    return;
+  }
+
+  try {
+    const creds = btoa(cfg.wpUser + ':' + cfg.wpPass);
+    const r = await fetch(`${WP_BASE}/posts/32449?context=edit`, {
+      headers: { 'Authorization': 'Basic ' + creds }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const post = await r.json();
+    const raw = (post.content?.raw || post.content?.rendered || '').replace(/<[^>]+>/g, ' ');
+
+    // Try to find revenue patterns: CHF X,XXX or CHF X.XXX or Umsatz: X
+    const patterns = [
+      /(?:Umsatz|Revenue|MRR|ARR)[:\s]+(?:CHF\s*)?([\d'.,]+)/i,
+      /CHF\s*([\d'.,]+(?:\s*[kK])?)/,
+      /(?:Total|Gesamt)[:\s]+(?:CHF\s*)?([\d'.,]+)/i,
+    ];
+
+    let found = null;
+    for (const pat of patterns) {
+      const m = raw.match(pat);
+      if (m) { found = m[1].trim(); break; }
+    }
+
+    if (found) {
+      dot('umsatzDot').className = 'dot green';
+      dot('umsatzVal').style.color = 'var(--green)';
+      dot('umsatzVal').style.fontSize = '22px';
+      dot('umsatzVal').textContent = 'CHF ' + found;
+      dot('umsatzSub').innerHTML = '<span class="tag green">LIVE</span> aus WP Post 32449';
+    } else {
+      // Show link to edit the post with clear instructions
+      dot('umsatzDot').className = 'dot yellow';
+      dot('umsatzVal').style.color = 'var(--yellow)';
+      dot('umsatzVal').style.fontSize = '18px';
+      dot('umsatzVal').textContent = 'n/a';
+      dot('umsatzSub').innerHTML = `<span class="tag yellow">SETUP</span> Post 32449: "Umsatz: CHF X" eintragen → <a href="https://brackmedia.ch/wp-admin/post.php?post=32449&action=edit" target="_blank" style="color:var(--muted)">Post bearbeiten →</a>`;
+    }
+  } catch(e) {
+    dot('umsatzDot').className = 'dot yellow';
+    dot('umsatzVal').textContent = '—';
+    dot('umsatzSub').innerHTML = `<span class="tag yellow">CORS</span> WP REST CORS Setup nötig`;
+  }
+}
+
+// ─── CF7 / LEADS (via Flamingo WP Plugin) ─────────────────
+async function loadLeads() {
+  const cfg = getConfig();
+  const dot = id => document.getElementById(id);
+
+  if (!cfg.wpUser || !cfg.wpPass) {
+    dot('leads7Dot').className = 'dot grey';
+    dot('leads7Val').textContent = '—';
+    dot('leads7Sub').innerHTML = '<span class="tag grey">FEHLT</span> WP Credentials konfigurieren';
+    dot('newLeadsVal').textContent = '—';
+    dot('newLeadsSub').innerHTML = '<span class="tag grey">FEHLT</span> WP Credentials konfigurieren';
+    return;
+  }
+
+  try {
+    const creds = btoa(cfg.wpUser + ':' + cfg.wpPass);
+    const since7d = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+
+    // Try Flamingo (CF7 submissions stored in DB)
+    const flamingoUrl = 'https://brackmedia.ch/wp-json/flamingo/v2/inbound-messages?per_page=100&after=' + encodeURIComponent(since7d);
+    const r = await fetch(flamingoUrl, {
+      headers: { 'Authorization': 'Basic ' + creds }
+    });
+
+    if (r.ok) {
+      const msgs = await r.json();
+      const count = Array.isArray(msgs) ? msgs.length : (msgs.total || 0);
+      dot('leads7Dot').className = 'dot green';
+      dot('leads7Val').style.color = count > 0 ? 'var(--green)' : 'var(--yellow)';
+      dot('leads7Val').textContent = count;
+      dot('leads7Sub').innerHTML = `<span class="tag green">LIVE</span> CF7/Flamingo letzte 7T`;
+      dot('leadsDot').className = 'dot green';
+      dot('newLeadsVal').style.color = 'var(--green)';
+      dot('newLeadsVal').textContent = count;
+      dot('newLeadsSub').innerHTML = `<span class="tag green">LIVE</span> CF7/Flamingo letzte 7T`;
+    } else if (r.status === 404) {
+      // Flamingo not installed — try WP posts with CF7 tag as fallback
+      throw new Error('flamingo_404');
+    } else {
+      throw new Error('HTTP ' + r.status);
+    }
+  } catch(e) {
+    const isCors = e.message === 'Failed to fetch';
+    const isFlamingo = e.message === 'flamingo_404';
+    dot('leads7Dot').className = 'dot yellow';
+    dot('leads7Val').style.color = 'var(--yellow)';
+    dot('leads7Val').textContent = '?';
+    if (isFlamingo) {
+      dot('leads7Sub').innerHTML = `<span class="tag yellow">SETUP</span> <a href="https://brackmedia.ch/wp-admin/plugin-install.php?s=flamingo" target="_blank" style="color:var(--muted)">Flamingo Plugin installieren →</a>`;
+    } else if (isCors) {
+      dot('leads7Sub').innerHTML = `<span class="tag yellow">CORS</span> WP REST CORS Setup nötig`;
+    } else {
+      dot('leads7Sub').innerHTML = `<span class="tag yellow">FEHLER</span> ${e.message}`;
+    }
+    dot('leadsDot').className = 'dot yellow';
+    dot('newLeadsVal').textContent = '?';
+    dot('newLeadsSub').innerHTML = dot('leads7Sub').innerHTML;
   }
 }
 
@@ -668,7 +869,7 @@ async function checkWPConnection() {
       headers: { 'Authorization': 'Basic ' + creds }
     });
     if (r.ok) {
-      wpDot.style.background = 'var(--green) ';
+      wpDot.style.background = 'var(--green)';
       wpDot.className = 'dot green';
       wpBadge.className = 'verified-badge v';
       wpBadge.textContent = 'LIVE';
@@ -691,7 +892,10 @@ async function loadAll() {
 
   await Promise.all([
     loadAsanaTasks(),
-    checkWPConnection()
+    checkWPConnection(),
+    loadCalendly(),
+    loadRevenue(),
+    loadLeads()
   ]);
 
   const now = new Date();
@@ -702,8 +906,11 @@ async function loadAll() {
   const cfg = getConfig();
   const asanaLive = !!cfg.asanaPat;
   const wpLive = !!(cfg.wpUser && cfg.wpPass);
+  const calLive = !!cfg.calendlyPat;
   document.getElementById('sourcesBadge').textContent =
-    (asanaLive ? 'Asana ✓' : 'Asana ?') + ' · ' + (wpLive ? 'WP ✓' : 'WP ?');
+    (asanaLive ? 'Asana ✓' : 'Asana ?') + ' · ' + (wpLive ? 'WP ✓' : 'WP ?') + ' · ' + (calLive ? 'Calendly ✓' : 'Calendly ?');
+  document.getElementById('revenueBadge').textContent =
+    (wpLive ? 'WP Live' : 'WP ?') + ' · ' + (calLive ? 'Calendly Live' : 'Calendly ?');
 }
 
 // ─── AUTO REFRESH ──────────────────────────────────────────
