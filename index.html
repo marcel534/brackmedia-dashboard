@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brackmedia CEO Dashboard</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg2: #111827;
+  --bg3: #1f2937;
+  --border: #374151;
+  --text: #f9fafb;
+  --muted: #9ca3af;
+  --accent: #3b82f6;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --orange: #f97316;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
+a { color: var(--accent); text-decoration: none; }
+
+/* TOP BAR */
+.topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: .5px; }
+.topbar h1 span { color: var(--accent); }
+.topbar-right { display: flex; gap: 12px; align-items: center; }
+.score-badge { background: var(--accent); color: #fff; border-radius: 20px; padding: 4px 14px; font-weight: 700; font-size: 15px; }
+.refresh-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 13px; transition: all .2s; }
+.refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+.config-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 13px; }
+.last-updated { color: var(--muted); font-size: 12px; }
+
+/* GRID LAYOUT */
+.dashboard { padding: 20px 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1600px; margin: 0 auto; }
+
+/* CARDS */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.card.wide2 { grid-column: span 2; }
+.card.wide3 { grid-column: span 3; }
+.card.wide4 { grid-column: span 4; }
+.card-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.card-value { font-size: 32px; font-weight: 800; line-height: 1; }
+.card-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.card-label { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* STATUS DOTS */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.dot.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.dot.red { background: var(--red); box-shadow: 0 0 6px var(--red); animation: pulse 1.5s infinite; }
+.dot.grey { background: var(--muted); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* SECTION HEADERS */
+.section-header { grid-column: span 4; margin-top: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.section-header h2 { font-size: 16px; font-weight: 700; }
+.section-header .badge { font-size: 11px; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; color: var(--muted); }
+
+/* ESCALATION ITEMS */
+.esc-list { display: flex; flex-direction: column; gap: 8px; }
+.esc-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; background: var(--bg3); border-radius: 8px; border-left: 3px solid var(--border); }
+.esc-item.critical { border-left-color: var(--red); }
+.esc-item.warning { border-left-color: var(--yellow); }
+.esc-item.ok { border-left-color: var(--green); }
+.esc-item .esc-label { font-weight: 600; font-size: 13px; }
+.esc-item .esc-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.esc-item .esc-badge { margin-left: auto; font-size: 10px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+.esc-item.critical .esc-badge { background: rgba(239,68,68,.2); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+.esc-item.warning .esc-badge { background: rgba(234,179,8,.15); color: var(--yellow); border: 1px solid rgba(234,179,8,.3); }
+.esc-item.ok .esc-badge { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+
+/* TASK ITEMS */
+.task-list { display: flex; flex-direction: column; gap: 6px; }
+.task-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg3); border-radius: 8px; cursor: pointer; transition: background .2s; }
+.task-item:hover { background: #2a3344; }
+.task-item .task-name { flex: 1; font-size: 13px; }
+.task-item .task-due { font-size: 11px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.task-item .task-due.urgent { background: rgba(239,68,68,.2); color: var(--red); }
+.task-item .task-due.soon { background: rgba(234,179,8,.15); color: var(--yellow); }
+.task-item .task-due.normal { background: rgba(34,197,94,.15); color: var(--green); }
+.task-item .task-type { font-size: 10px; background: rgba(59,130,246,.15); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); border-radius: 4px; padding: 1px 6px; }
+
+/* METRIC ROW */
+.metric-row { display: flex; gap: 12px; }
+.metric { flex: 1; padding: 12px; background: var(--bg3); border-radius: 8px; }
+.metric .m-val { font-size: 24px; font-weight: 800; }
+.metric .m-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.metric .m-change { font-size: 11px; margin-top: 4px; }
+.metric .m-change.up { color: var(--green); }
+.metric .m-change.down { color: var(--red); }
+
+/* HEALTH GRID */
+.health-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.health-item { display: flex; align-items: center; gap: 8px; padding: 10px; background: var(--bg3); border-radius: 8px; }
+.health-item .h-label { font-size: 12px; }
+.health-item .h-status { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+/* DATA SOURCE LIST */
+.source-list { display: flex; flex-direction: column; gap: 6px; }
+.source-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 10px; background: var(--bg3); border-radius: 6px; }
+.source-item span { flex: 1; }
+.verified-badge { font-size: 10px; padding: 1px 6px; border-radius: 4px; }
+.verified-badge.v { background: rgba(34,197,94,.15); color: var(--green); }
+.verified-badge.u { background: rgba(234,179,8,.15); color: var(--yellow); }
+.verified-badge.m { background: rgba(107,114,128,.15); color: var(--muted); }
+
+/* CONFIG MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.modal-overlay.hidden { display: none; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 480px; max-width: 95vw; }
+.modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.modal p { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+.form-group input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; }
+.form-group input:focus { outline: none; border-color: var(--accent); }
+.modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+.btn-primary { flex: 1; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: 700; cursor: pointer; font-size: 14px; }
+.btn-cancel { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; cursor: pointer; font-size: 14px; }
+.hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* LOADING */
+.loading { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* PROGRESS BAR */
+.progress-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+
+/* TAG */
+.tag { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+.tag.red { background: rgba(239,68,68,.15); color: var(--red); }
+.tag.green { background: rgba(34,197,94,.15); color: var(--green); }
+.tag.yellow { background: rgba(234,179,8,.15); color: var(--yellow); }
+.tag.blue { background: rgba(59,130,246,.15); color: #93c5fd; }
+.tag.grey { background: rgba(107,114,128,.15); color: var(--muted); }
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .dashboard { grid-template-columns: repeat(2, 1fr); }
+  .card.wide3, .card.wide4, .section-header { grid-column: span 2; }
+}
+@media (max-width: 640px) {
+  .dashboard { grid-template-columns: 1fr; padding: 12px; }
+  .card.wide2, .card.wide3, .card.wide4, .section-header { grid-column: span 1; }
+  .health-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- CONFIG MODAL -->
+<div class="modal-overlay hidden" id="configModal">
+  <div class="modal">
+    <h2>⚙️ Dashboard konfigurieren</h2>
+    <p>Verbinde Asana und WordPress für Live-Daten. Einmalige Einrichtung — gespeichert lokal.</p>
+    <div class="form-group">
+      <label>Asana Personal Access Token</label>
+      <input type="password" id="asanaPat" placeholder="1/xxxxxxxxxxxxxxxx..." />
+      <div class="hint">Asana → Profil → Einstellungen → Apps → Persönliche Zugriffstoken</div>
+    </div>
+    <div class="form-group">
+      <label>WordPress Benutzername</label>
+      <input type="text" id="wpUser" placeholder="marcel" />
+    </div>
+    <div class="form-group">
+      <label>WordPress Application Password</label>
+      <input type="password" id="wpPass" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx" />
+      <div class="hint">WP-Admin → Benutzer → Profil → Application Passwords → Neu generieren</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeConfig()">Abbrechen</button>
+      <button class="btn-primary" onclick="saveConfig()">Speichern &amp; verbinden</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <h1>BRACKMEDIA <span>CEO</span> DASHBOARD</h1>
+  <div class="topbar-right">
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="refresh-btn" onclick="loadAll()">⟳ Aktualisieren</button>
+    <button class="config-btn" onclick="openConfig()">⚙️ Setup</button>
+    <div class="score-badge" id="scoreDisplay">87/100</div>
+  </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+
+  <!-- ═══ SECTION: CEO OVERVIEW ═══ -->
+  <div class="section-header">
+    <h2>📊 CEO OVERVIEW</h2>
+    <span class="badge" id="overviewBadge">Lädt…</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot green"></span>System Score</div>
+    <div class="card-value" id="sysScore">87</div>
+    <div class="card-sub">/100 — Chief Execution Auditor</div>
+    <div class="progress-bar"><div class="progress-fill" id="scoreBar" style="width:87%;background:var(--green)"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot red" id="taskDot"></span>Offene Marcel Tasks</div>
+    <div class="card-value" id="openTasks">—</div>
+    <div class="card-sub" id="urgentTask">lädt…</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot red" id="warnDot"></span>Kritische Warnungen</div>
+    <div class="card-value" id="criticalCount">2</div>
+    <div class="card-sub">MAGICPOST-NOTFALL + QUEUE-STAU</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Neue Leads</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> CF7 → CRM nicht verbunden</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Neue Termine</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> Calendly API nicht verbunden</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>Content Queue</div>
+    <div class="card-value">2</div>
+    <div class="card-sub">Posts geplant (19.06. + 22.06.)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>GSC Queue</div>
+    <div class="card-value">6</div>
+    <div class="card-sub">URLs seit >11 Tagen offen</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot green"></span>EVO Status</div>
+    <div class="card-value" style="font-size:20px">Sauber</div>
+    <div class="card-sub">Letzter Lauf: 17.06.2026, 03:00</div>
+  </div>
+
+  <!-- ═══ SECTION: SYSTEM HEALTH ═══ -->
+  <div class="section-header">
+    <h2>🔴 SYSTEM HEALTH</h2>
+    <span class="badge" id="healthBadge">5 Eskalationen</span>
+  </div>
+
+  <div class="card wide2">
+    <div class="card-title">Aktive Eskalationen</div>
+    <div class="esc-list">
+      <div class="esc-item critical">
+        <span class="dot red"></span>
+        <div>
+          <div class="esc-label">MAGICPOST-NOTFALL</div>
+          <div class="esc-desc">19.06. Kontra-These nicht terminiert — fällig morgen!</div>
+        </div>
+        <span class="esc-badge">KRITISCH</span>
+      </div>
+      <div class="esc-item warning">
+        <span class="dot yellow"></span>
+        <div>
+          <div class="esc-label">QUEUE-STAU</div>
+          <div class="esc-desc">6 GSC URLs seit >11 Tagen nicht bei Bing submitted</div>
+        </div>
+        <span class="esc-badge">HOCH</span>
+      </div>
+      <div class="esc-item warning">
+        <span class="dot yellow"></span>
+        <div>
+          <div class="esc-label">GEO-LÜCKE KRITISCH</div>
+          <div class="esc-desc">«community management agentur schweiz» nicht sichtbar in AI-Suche</div>
+        </div>
+        <span class="esc-badge">MITTEL</span>
+      </div>
+      <div class="esc-item warning">
+        <span class="dot yellow"></span>
+        <div>
+          <div class="esc-label">CONVERSION-BEFUND</div>
+          <div class="esc-desc">GA4/GTM feuert auf page_view statt form_submit</div>
+        </div>
+        <span class="esc-badge">MITTEL</span>
+      </div>
+      <div class="esc-item warning">
+        <span class="dot yellow"></span>
+        <div>
+          <div class="esc-label">ROLLBACK-ALARM</div>
+          <div class="esc-desc">Post 32349 Ranking: Pos 25 → 55 nach Title-Änderung — beobachten</div>
+        </div>
+        <span class="esc-badge">BEOBACHTEN</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card wide2">
+    <div class="card-title">System Health Status</div>
+    <div class="health-grid">
+      <div class="health-item"><span class="dot green"></span><div><div class="h-label">EVO Active</div><div class="h-status">Täglich 03:00</div></div></div>
+      <div class="health-item"><span class="dot green"></span><div><div class="h-label">Asana Sync</div><div class="h-status">Kein Duplikat</div></div></div>
+      <div class="health-item"><span class="dot green"></span><div><div class="h-label">WP Hub 32449</div><div class="h-status">26,920 chars</div></div></div>
+      <div class="health-item"><span class="dot red"></span><div><div class="h-label">MagicPost</div><div class="h-status">19.06. offen ⚠️</div></div></div>
+      <div class="health-item"><span class="dot yellow"></span><div><div class="h-label">GSC Queue</div><div class="h-status">6 URLs offen</div></div></div>
+      <div class="health-item"><span class="dot yellow"></span><div><div class="h-label">Elementor</div><div class="h-status">Update nötig</div></div></div>
+      <div class="health-item"><span class="dot green"></span><div><div class="h-label">GBP Rezensionen</div><div class="h-status">ERLEDIGT 14.06.</div></div></div>
+      <div class="health-item"><span class="dot green"></span><div><div class="h-label">local.ch</div><div class="h-status">ERLEDIGT 14.06.</div></div></div>
+      <div class="health-item"><span class="dot green"></span><div><div class="h-label">search.ch</div><div class="h-status">ERLEDIGT 17.06.</div></div></div>
+      <div class="health-item"><span class="dot yellow"></span><div><div class="h-label">GEO Department</div><div class="h-status">Erste Messung done</div></div></div>
+      <div class="health-item"><span class="dot yellow"></span><div><div class="h-label">SPOF-Schutz</div><div class="h-status">Monitoring aktiv</div></div></div>
+      <div class="health-item"><span class="dot red"></span><div><div class="h-label">JS-Fehler (WP)</div><div class="h-status">Elementor 3.14.0</div></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION: CEO ACTION CENTER ═══ -->
+  <div class="section-header">
+    <h2>✅ CEO ACTION CENTER</h2>
+    <span class="badge" id="actionBadge">Lädt…</span>
+  </div>
+
+  <div class="card wide4" id="actionCenter">
+    <div class="card-title">Nur Marcel-Tasks (Entscheidungen · Logins · Freigaben)</div>
+    <div class="task-list" id="taskList">
+      <div class="loading"><div class="spinner"></div> Lade Asana-Tasks…</div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION: SEO ═══ -->
+  <div class="section-header">
+    <h2>🔍 SEO</h2>
+    <span class="badge">Teils live</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Impressionen</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> GSC API nicht verbunden</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Klicks</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> GSC API nicht verbunden</div>
+  </div>
+
+  <div class="card wide2">
+    <div class="card-title">Offene SEO-Tasks</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="metric"><div class="m-val" style="color:var(--red)">6</div><div class="m-label">GSC URLs offen</div><div class="m-change down">seit 06.06.</div></div>
+      <div class="metric"><div class="m-val" style="color:var(--yellow)">6</div><div class="m-label">Bing-Submission</div><div class="m-change" style="color:var(--muted)">fällig 19.06.</div></div>
+      <div class="metric"><div class="m-val" style="color:var(--yellow)">1</div><div class="m-label">Rollback-Watch</div><div class="m-change" style="color:var(--muted)">Post 32349</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION: CONTENT ═══ -->
+  <div class="section-header">
+    <h2>✍️ CONTENT &amp; LINKEDIN</h2>
+    <span class="badge">Live aus WP 32451</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot red"></span>MagicPost Status</div>
+    <div class="card-value" style="font-size:18px;color:var(--red)">NOTFALL</div>
+    <div class="card-sub">19.06. nicht terminiert</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>Geplante Posts</div>
+    <div class="card-value">2</div>
+    <div class="card-sub">19.06. Kontra-These · 22.06. Lokalmedientage</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>SEO Content Auftrag</div>
+    <div class="card-value" style="font-size:14px;line-height:1.4">Long-Form Blog</div>
+    <div class="card-sub">«Beste Community Mgmt Agentur CH 2026»</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>LinkedIn Reichweite</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> LinkedIn API nicht verbunden</div>
+  </div>
+
+  <!-- ═══ SECTION: GEO / AI ═══ -->
+  <div class="section-header">
+    <h2>🤖 GEO — AI VISIBILITY</h2>
+    <span class="badge">Erste Messung 17.06.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot green"></span>GEO Department</div>
+    <div class="card-value" style="font-size:18px;color:var(--green)">Aktiv</div>
+    <div class="card-sub">Post 34228 — Logbuch erstellt</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot green"></span>Branded Keywords</div>
+    <div class="card-value" style="font-size:18px;color:var(--green)">Sichtbar</div>
+    <div class="card-sub">«brackmedia» in AI-Suchen nachweisbar</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot red"></span>Non-Branded Keywords</div>
+    <div class="card-value" style="font-size:18px;color:var(--red)">Lücke</div>
+    <div class="card-sub">«community mgmt agentur schweiz» nicht sichtbar</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>Nächste GEO-Messung</div>
+    <div class="card-value" style="font-size:18px">24.06.</div>
+    <div class="card-sub">Wöchentlicher Rhythmus</div>
+  </div>
+
+  <!-- ═══ SECTION: LOCAL SEO ═══ -->
+  <div class="section-header">
+    <h2>📍 LOCAL SEO</h2>
+    <span class="badge">Live aus WP 32460</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot green"></span>GBP Status</div>
+    <div class="card-value" style="font-size:18px;color:var(--green)">OK</div>
+    <div class="card-sub">Rezensionen + Fotos: ERLEDIGT 14.06.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot green"></span>Verzeichnisse</div>
+    <div class="card-value" style="font-size:18px;color:var(--green)">2/2</div>
+    <div class="card-sub">local.ch ✓ · search.ch ✓</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>NAP-Konsistenz</div>
+    <div class="card-value" style="font-size:18px;color:var(--yellow)">Offen</div>
+    <div class="card-sub">.eu vs .ch — Entscheid fällig 21.06.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>Clutch.co</div>
+    <div class="card-value" style="font-size:18px;color:var(--yellow)">Offen</div>
+    <div class="card-sub">URL: .eu → .ch + 0 Reviews — fällig 23.06.</div>
+  </div>
+
+  <!-- ═══ SECTION: REVENUE ═══ -->
+  <div class="section-header">
+    <h2>💰 REVENUE &amp; LEADS</h2>
+    <span class="badge">Manuell (LEAD-ERFOLG Format)</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Leads 7 Tage</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> Kein CF7-CRM-Sync</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Erstgespräche</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> Calendly API nicht verbunden</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Umsatz Monat</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">FEHLT</span> Manueller Eintrag in Post 32449</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot grey"></span>Conversion Rate</div>
+    <div class="card-value" style="color:var(--muted)">—</div>
+    <div class="card-sub"><span class="tag grey">UNSICHER</span> GA4/GTM Trigger-Fehler aktiv</div>
+  </div>
+
+  <!-- ═══ SECTION: DATA SOURCES ═══ -->
+  <div class="section-header">
+    <h2>🔌 DATENQUELLEN</h2>
+    <span class="badge" id="sourcesBadge">Prüfe…</span>
+  </div>
+
+  <div class="card wide2">
+    <div class="card-title">Verbundene Quellen</div>
+    <div class="source-list">
+      <div class="source-item"><span class="dot" id="asanaDot" style="background:var(--muted)"></span> <span>Asana (Projekt 1208078355892444)</span> <span class="verified-badge" id="asanaBadge">prüft…</span></div>
+      <div class="source-item"><span class="dot" id="wpDot" style="background:var(--muted)"></span> <span>WordPress REST API (brackmedia.ch)</span> <span class="verified-badge" id="wpBadge">prüft…</span></div>
+      <div class="source-item"><span class="dot green"></span> <span>EVO Logbuch (Post 32449 Hub)</span> <span class="verified-badge v">VERIFIZIERT</span></div>
+      <div class="source-item"><span class="dot green"></span> <span>Content Queue (Post 32451)</span> <span class="verified-badge v">VERIFIZIERT</span></div>
+      <div class="source-item"><span class="dot green"></span> <span>Autoritätsbericht (Post 32452)</span> <span class="verified-badge v">VERIFIZIERT</span></div>
+      <div class="source-item"><span class="dot green"></span> <span>GEO Logbuch (Post 34228)</span> <span class="verified-badge v">VERIFIZIERT</span></div>
+    </div>
+  </div>
+
+  <div class="card wide2">
+    <div class="card-title">Fehlende Quellen</div>
+    <div class="source-list">
+      <div class="source-item"><span class="dot grey"></span> <span>Google Search Console API</span> <span class="verified-badge m">FEHLT</span></div>
+      <div class="source-item"><span class="dot grey"></span> <span>LinkedIn Analytics API</span> <span class="verified-badge m">FEHLT</span></div>
+      <div class="source-item"><span class="dot grey"></span> <span>Calendly API</span> <span class="verified-badge m">FEHLT</span></div>
+      <div class="source-item"><span class="dot grey"></span> <span>GA4 API</span> <span class="verified-badge m">FEHLT</span></div>
+      <div class="source-item"><span class="dot grey"></span> <span>CF7 → CRM / Email</span> <span class="verified-badge m">FEHLT</span></div>
+      <div class="source-item"><span class="dot yellow"></span> <span>WP REST API CORS (brackmedia.ch → GitHub)</span> <span class="verified-badge u">SETUP NÖTIG</span></div>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const WP_BASE = 'https://brackmedia.ch/wp-json/wp/v2';
+const ASANA_BASE = 'https://app.asana.com/api/1.0';
+const ASANA_PROJECT = '1208078355892444';
+
+function getConfig() {
+  return {
+    asanaPat: localStorage.getItem('bm_asana_pat') || '',
+    wpUser: localStorage.getItem('bm_wp_user') || '',
+    wpPass: localStorage.getItem('bm_wp_pass') || ''
+  };
+}
+
+function saveConfig() {
+  const pat = document.getElementById('asanaPat').value.trim();
+  const user = document.getElementById('wpUser').value.trim();
+  const pass = document.getElementById('wpPass').value.trim();
+  if (pat) localStorage.setItem('bm_asana_pat', pat);
+  if (user) localStorage.setItem('bm_wp_user', user);
+  if (pass) localStorage.setItem('bm_wp_pass', pass);
+  closeConfig();
+  loadAll();
+}
+
+function openConfig() {
+  const cfg = getConfig();
+  if (cfg.asanaPat) document.getElementById('asanaPat').value = cfg.asanaPat;
+  if (cfg.wpUser) document.getElementById('wpUser').value = cfg.wpUser;
+  if (cfg.wpPass) document.getElementById('wpPass').value = cfg.wpPass;
+  document.getElementById('configModal').classList.remove('hidden');
+}
+
+function closeConfig() {
+  document.getElementById('configModal').classList.add('hidden');
+}
+
+// ─── ASANA TASKS ──────────────────────────────────────────
+const TASK_TYPES = {
+  'MagicPost': 'Login',
+  'Bing-Submission': 'Login',
+  'Elementor': 'Login',
+  'NAP-Entscheidung': 'Entscheidung',
+  'CF7': 'Login',
+  'GA4': 'Entscheidung',
+  'Regions-Entscheid': 'Entscheidung',
+  'Clutch': 'Login',
+  'Brackmedia .cz': 'Entscheidung'
+};
+
+function taskType(name) {
+  for (const [k, v] of Object.entries(TASK_TYPES)) {
+    if (name.includes(k)) return v;
+  }
+  return 'Entscheidung';
+}
+
+function dueBadge(dueOn) {
+  if (!dueOn) return { cls: 'normal', label: 'Kein Datum' };
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(dueOn + 'T00:00:00');
+  const diff = Math.round((d - today) / 86400000);
+  if (diff <= 1) return { cls: 'urgent', label: diff < 0 ? 'ÜBERFÄLLIG' : diff === 0 ? 'HEUTE' : 'MORGEN' };
+  if (diff <= 4) return { cls: 'soon', label: dueOn };
+  return { cls: 'normal', label: dueOn };
+}
+
+async function loadAsanaTasks() {
+  const cfg = getConfig();
+  const taskList = document.getElementById('taskList');
+
+  if (!cfg.asanaPat) {
+    taskList.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:10px;">
+      ⚙️ Asana PAT nicht konfiguriert. <a href="#" onclick="openConfig();return false">Jetzt einrichten →</a>
+    </div>`;
+    document.getElementById('asanaDot').style.background = 'var(--muted)';
+    document.getElementById('asanaBadge').className = 'verified-badge m';
+    document.getElementById('asanaBadge').textContent = 'FEHLT';
+    document.getElementById('actionBadge').textContent = '0 Tasks';
+    document.getElementById('openTasks').textContent = '?';
+    document.getElementById('urgentTask').textContent = 'Asana nicht verbunden';
+    return;
+  }
+
+  try {
+    const r = await fetch(`${ASANA_BASE}/projects/${ASANA_PROJECT}/tasks?opt_fields=name,completed,due_on,notes&limit=100`, {
+      headers: { 'Authorization': `Bearer ${cfg.asanaPat}`, 'Accept': 'application/json' }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const tasks = (data.data || []).filter(t => !t.completed);
+
+    document.getElementById('openTasks').textContent = tasks.length;
+    document.getElementById('asanaDot').style.background = 'var(--green)';
+    document.getElementById('asanaDot').className = 'dot green';
+    document.getElementById('asanaBadge').className = 'verified-badge v';
+    document.getElementById('asanaBadge').textContent = 'LIVE';
+    document.getElementById('actionBadge').textContent = tasks.length + ' offene Tasks';
+
+    // Find most urgent
+    const sorted = [...tasks].sort((a, b) => {
+      if (!a.due_on) return 1; if (!b.due_on) return -1;
+      return a.due_on < b.due_on ? -1 : 1;
+    });
+    if (sorted.length > 0) {
+      const badge = dueBadge(sorted[0].due_on);
+      document.getElementById('urgentTask').textContent = '⚠️ Dringendste: ' + sorted[0].name.substring(0, 40) + '…';
+    }
+
+    // Render task list (only Marcel-relevant)
+    const marcelGIDs = ['1215805069540598','1215804953975871','1215805067983849','1215805243585261','1215804936893100','1215805043969524','1215747469015583','1215747704956832','1215629009089856'];
+    const marcelTasks = tasks.filter(t => marcelGIDs.includes(t.gid));
+
+    if (marcelTasks.length === 0) {
+      taskList.innerHTML = `<div style="color:var(--green);padding:10px;font-size:13px;">✅ Alle Marcel-Tasks erledigt!</div>`;
+      return;
+    }
+
+    const sortedMarcel = [...marcelTasks].sort((a, b) => {
+      if (!a.due_on) return 1; if (!b.due_on) return -1;
+      return a.due_on < b.due_on ? -1 : 1;
+    });
+
+    taskList.innerHTML = sortedMarcel.map(t => {
+      const badge = dueBadge(t.due_on);
+      const type = taskType(t.name);
+      return `<div class="task-item" onclick="window.open('https://app.asana.com/1/1205748965827874/project/${ASANA_PROJECT}/task/${t.gid}','_blank')">
+        <span class="dot ${badge.cls === 'urgent' ? 'red' : badge.cls === 'soon' ? 'yellow' : 'green'}"></span>
+        <span class="task-name">${t.name}</span>
+        <span class="tag blue">${type}</span>
+        <span class="task-due ${badge.cls}">${badge.label}</span>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('asanaDot').style.background = 'var(--red)';
+    document.getElementById('asanaBadge').className = 'verified-badge m';
+    document.getElementById('asanaBadge').textContent = 'FEHLER';
+    taskList.innerHTML = `<div style="color:var(--red);font-size:12px;padding:10px;">Asana-Fehler: ${e.message}. PAT prüft!</div>`;
+    document.getElementById('openTasks').textContent = '!';
+    document.getElementById('urgentTask').textContent = 'Verbindung fehlgeschlagen';
+  }
+}
+
+// ─── WP REST API ──────────────────────────────────────────
+async function checkWPConnection() {
+  const cfg = getConfig();
+  const wpDot = document.getElementById('wpDot');
+  const wpBadge = document.getElementById('wpBadge');
+
+  if (!cfg.wpUser || !cfg.wpPass) {
+    wpBadge.className = 'verified-badge m';
+    wpBadge.textContent = 'NICHT KONFIGURIERT';
+    return;
+  }
+
+  try {
+    const creds = btoa(cfg.wpUser + ':' + cfg.wpPass);
+    const r = await fetch(`${WP_BASE}/posts/32449?context=edit`, {
+      headers: { 'Authorization': 'Basic ' + creds }
+    });
+    if (r.ok) {
+      wpDot.style.background = 'var(--green) ';
+      wpDot.className = 'dot green';
+      wpBadge.className = 'verified-badge v';
+      wpBadge.textContent = 'LIVE';
+    } else if (r.status === 0 || r.type === 'opaque') {
+      throw new Error('CORS blockiert');
+    } else {
+      throw new Error('HTTP ' + r.status);
+    }
+  } catch(e) {
+    wpDot.style.background = 'var(--yellow)';
+    wpBadge.className = 'verified-badge u';
+    wpBadge.textContent = 'CORS SETUP NÖTIG';
+  }
+}
+
+// ─── MAIN LOAD ────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById('lastUpdated').textContent = 'Lädt…';
+  document.getElementById('overviewBadge').textContent = 'Lädt…';
+
+  await Promise.all([
+    loadAsanaTasks(),
+    checkWPConnection()
+  ]);
+
+  const now = new Date();
+  document.getElementById('lastUpdated').textContent = 'Zuletzt: ' +
+    now.toLocaleDateString('de-CH') + ' ' + now.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('overviewBadge').textContent = '✓ Aktualisiert';
+
+  const cfg = getConfig();
+  const asanaLive = !!cfg.asanaPat;
+  const wpLive = !!(cfg.wpUser && cfg.wpPass);
+  document.getElementById('sourcesBadge').textContent =
+    (asanaLive ? 'Asana ✓' : 'Asana ?') + ' · ' + (wpLive ? 'WP ✓' : 'WP ?');
+}
+
+// ─── AUTO REFRESH ──────────────────────────────────────────
+loadAll();
+setInterval(loadAll, 5 * 60 * 1000); // every 5 minutes
+
+// Show config on first load if no credentials
+const cfg = getConfig();
+if (!cfg.asanaPat && !cfg.wpUser) {
+  setTimeout(() => openConfig(), 800);
+}
+</script>
+</body>
+</html>
