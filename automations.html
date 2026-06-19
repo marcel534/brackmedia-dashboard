@@ -120,7 +120,7 @@ td.link-cell  { width: 80px; text-align: right; }
 <div class="section-label">Mo – Fr</div>
 <div class="card"><table><tbody id="mofr"></tbody></table></div>
 
-<div class="section-label">Wochentlich (fixer Tag)</div>
+<div class="section-label">Wöchentlich (fixer Tag)</div>
 <div class="card"><table><tbody id="weekly"></tbody></table></div>
 
 <div class="section-label">Monatlich</div>
@@ -138,10 +138,10 @@ td.link-cell  { width: 80px; text-align: right; }
 
 const AUTOMATIONS = [
   // Daily
-  { id:'evo',         name:'EVO Daily',             takt:'Täglich 03:00',        schedule:{type:'daily'hour:3,min:0},    url:'brackmedia-evo-daily',         group:'daily' },
+  { id:'evo',         name:'EVO Daily',             takt:'Täglich 03:00',        schedule:{type:'daily',hour:3,min:0},    url:'brackmedia-evo-daily',         group:'daily' },
   { id:'uptime',      name:'Uptime Check',           takt:'Täglich 12:00',        schedule:{type:'daily',hour:12,min:0},   url:'brackmedia-uptime-check',       group:'daily' },
   { id:'lead',        name:'Lead Intelligence',      takt:'Täglich 13:00',        schedule:{type:'daily',hour:13,min:0},   url:'brackmedia-lead-intelligence',  group:'daily' },
-  { id:'oobs',        name:'Design Jobs',            takt:'Täglich 16:00',        schedule:{type:'daily',hour:16,min:0},   url:'taegliche-design-jobs',         group:'daily' },
+  { id:'jobs',        name:'Design Jobs',            takt:'Täglich 16:00',        schedule:{type:'daily',hour:16,min:0},   url:'taegliche-design-jobs',         group:'daily' },
   // Mo–Fr
   { id:'autoblog',    name:'Autoblog',               takt:'Mo–Fr 07:00',          schedule:{type:'weekdays',hour:7,min:0}, url:'brackmedia-autoblog',           group:'mofr' },
   { id:'seo',         name:'SEO Manager',            takt:'Mo/Mi/Fr 08:00',       schedule:{type:'days',days:[1,3,5],hour:8,min:0}, url:'brackmedia-seo-manager', group:'mofr' },
@@ -154,7 +154,7 @@ const AUTOMATIONS = [
   { id:'conv',        name:'Conversion Specialist',  takt:'Donnerstag 09:00',     schedule:{type:'days',days:[4],hour:9,min:0},  url:'brackmedia-conversion-specialist',group:'weekly'},
   { id:'todo',        name:'Todo Sync',              takt:'Freitag 16:00',        schedule:{type:'days',days:[5],hour:16,min:0}, url:'brackmedia-todo-sync',           group:'weekly' },
   { id:'local',       name:'Local SEO',              takt:'Samstag 10:00',        schedule:{type:'days',days:[6],hour:10,min:0}, url:'brackmedia-local-seo',           group:'weekly' },
-  { id:'li_ana',      name:'LinkedIn Analyst',       takt:'Sonntag 07:00',        schedule:{type:'days',days:[0],hour:7,min:0},  url:'brackmedia-linkedin-analyst',    group:'weekly'},
+  { id:'li_ana',      name:'LinkedIn Analyst',       takt:'Sonntag 07:00',        schedule:{type:'days',days:[0],hour:7,min:0},  url:'brackmedia-linkedin-analyst',    group:'weekly' },
   { id:'rep',         name:'Reputation Manager',     takt:'Sonntag 10:00',        schedule:{type:'days',days:[0],hour:10,min:0}, url:'brackmedia-reputation-manager',  group:'weekly' },
   // Monthly
   { id:'seo_rep',     name:'SEO Monatsreport',       takt:'1. des Monats 09:30',  schedule:{type:'monthly',day:1,hour:9,min:30}, url:'brackmedia-seo-monatsreport',    group:'monthly'},
@@ -262,7 +262,7 @@ function fmtDate(d) {
   else if (hours < 24) ago = `vor ${hours} Std`;
   else if (days === 1) ago = 'vor 1 Tag';
   else ago = `vor ${days} Tagen`;
-  
+
   return { label, ago };
 }
 
@@ -313,7 +313,7 @@ function renderRow(a, now) {
 
   const dotClass = status === 'ok' ? 'green' : status === 'late' ? 'red' : status === 'warn' ? 'yellow' : 'grey';
   const pillClass = status === 'ok' ? 'pill-ok' : status === 'late' ? 'pill-late' : status === 'warn' ? 'pill-warn' : 'pill-soon';
-  const pillText  = status === 'ok' ? '✓ OK' : status === 'late' ? '✛ Überfällig' : status === 'warn' ? '➠ Prüfen' : `⟳ ${nextLabel}`;
+  const pillText  = status === 'ok' ? '✓ OK' : status === 'late' ? '✗ Überfällig' : status === 'warn' ? '⚠ Prüfen' : `⟳ ${nextLabel}`;
 
   return `<tr>
     <td class="dot-cell"><span class="dot ${dotClass}"></span></td>
@@ -329,7 +329,7 @@ function init() {
   document.getElementById('ts').textContent = now.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('summaryTs').textContent = 'Stand: ' + now.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
 
-  const groups = { daily:'', mofr:'', weekly::'', monthly:'' };
+  const groups = { daily:'', mofr:'', weekly:'', monthly:'' };
   let ok=0, warn=0, late=0, soon=0;
 
   AUTOMATIONS.forEach(a => {
