@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brackmedia · Automationen</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a0e1a; color: #f9fafb; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; }
+a { color: #3b82f6; text-decoration: none; }
+
+.topbar {
+  background: #111827; border-bottom: 1px solid #374151;
+  padding: 14px 24px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 10;
+}
+.topbar h1 { font-size: 16px; font-weight: 700; letter-spacing: .5px; }
+.topbar h1 span { color: #3b82f6; }
+.topbar-right { display: flex; gap: 10px; align-items: center; }
+.btn { background: #1f2937; border: 1px solid #374151; color: #9ca3af;
+  border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 13px; }
+.btn:hover { border-color: #3b82f6; color: #3b82f6; }
+.ts { color: #6b7280; font-size: 12px; }
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; font-size: 11px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; color: #6b7280;
+  padding: 0 12px 10px; border-bottom: 1px solid #1f2937;
+}
+thead th:last-child { text-align: right; }
+
+tbody tr { border-bottom: 1px solid #1f2937; transition: background .15s; }
+tbody tr:hover { background: #111827; }
+tbody td { padding: 14px 12px; vertical-align: middle; }
+
+.name { font-weight: 600; font-size: 14px; }
+.sub  { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+.result { font-size: 14px; }
+.result b { font-weight: 600; }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot.green  { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+.dot.yellow { background: #eab308; box-shadow: 0 0 6px #eab308; }
+.dot.red    { background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: pulse 1.5s infinite; }
+.dot.grey   { background: #9ca3af; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.time { font-size: 13px; color: #9ca3af; white-space: nowrap; text-align: right; }
+.time .ago { font-size: 11px; color: #4b5563; display: block; margin-top: 2px; }
+
+.tag { display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; }
+.tag.green  { background: rgba(34,197,94,.15); color: #22c55e; }
+.tag.yellow { background: rgba(234,179,8,.15); color: #eab308; }
+.tag.red    { background: rgba(239,68,68,.15); color: #ef4444; }
+.tag.grey   { background: rgba(107,114,128,.15); color: #9ca3af; }
+
+.loading { color: #6b7280; font-size: 12px; }
+.spinner { width: 12px; height: 12px; border: 2px solid #374151;
+  border-top-color: #3b82f6; border-radius: 50%;
+  animation: spin .8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>BRACKMEDIA <span>AUTOMATIONEN</span></h1>
+  <div class="topbar-right">
+    <span class="ts" id="ts">—</span>
+    <button class="btn" onclick="loadAll()">⟳ Aktualisieren</button>
+    <a href="index.html" class="btn">← Dashboard</a>
+  </div>
+</div>
+
+<div class="wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="width:36px"></th>
+      <th>Automation</th>
+      <th>Letztes Ergebnis</th>
+      <th>Letzte Ausführung</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+</div>
+
+<script>
+const WP_BASE = 'https://brackmedia.ch/wp-json/wp/v2';
+const ASANA_BASE = 'https://app.asana.com/api/1.0';
+const ASANA_PROJECT = '1208078355892444';
+
+function cfg() {
+  return {
+    asana: localStorage.getItem('bm_asana_pat') || '',
+    wpUser: localStorage.getItem('bm_wp_user') || '',
+    wpPass: localStorage.getItem('bm_wp_pass') || '',
+    cal: localStorage.getItem('bm_calendly_pat') || ''
+  };
+}
+
+// --- row helpers ---
+const rows = document.getElementById('rows');
+
+function makeRow(id, dotClass, name, sub, resultHTML, timeStr, agoStr) {
+  let tr = document.getElementById('r_' + id);
+  if (!tr) {
+    tr = document.createElement('tr');
+    tr.id = 'r_' + id;
+    rows.appendChild(tr);
+  }
+  tr.innerHTML = `
+    <td><span class="dot ${dotClass}" id="dot_${id}"></span></td>
+    <td><div class="name">${name}</div><div class="sub">${sub}</div></td>
+    <td class="result" id="res_${id}">${resultHTML}</td>
+    <td class="time">${timeStr}<span class="ago">${agoStr}</span></td>`;
+}
+
+function setResult(id, dotClass, resultHTML) {
+  const dot = document.getElementById('dot_' + id);
+  const res = document.getElementById('res_' + id);
+  if (dot) dot.className = 'dot ' + dotClass;
+  if (res) res.innerHTML = resultHTML;
+}
+
+function spin() {
+  return '<span class="spinner"></span><span class="loading">lädt…</span>';
+}
+
+// --- load functions ---
+async function loadEVO() {
+  const c = cfg();
+  if (!c.wpUser || !c.wpPass) {
+    makeRow('evo', 'grey', 'EVO Logbuch', 'täglich 03:00 · WP Post 32449',
+      '<span class="tag grey">FEHLT</span> WP-Credentials konfigurieren', '—', 'unbekannt');
+    return;
+  }
+  makeRow('evo', 'grey', 'EVO Logbuch', 'täglich 03:00 · WP Post 32449', spin(), '17.06.2026 03:00', 'gestern Nacht');
+  try {
+    const creds = btoa(c.wpUser + ':' + c.wpPass);
+    const r = await fetch(`${WP_BASE}/posts/32449?context=edit`, {
+      headers: { 'Authorization': 'Basic ' + creds }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const p = await r.json();
+    const mod = p.modified ? new Date(p.modified).toLocaleString('de-CH', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const len = (p.content?.raw || '').length;
+    setResult('evo', 'green', `<b>${len.toLocaleString('de-CH')}</b> Zeichen · Hub aktuell`);
+    document.querySelector('#r_evo td.time').innerHTML = mod + '<span class="ago">letzte Änderung</span>';
+  } catch(e) {
+    setResult('evo', 'yellow', `<span class="tag yellow">CORS</span> WP-CORS Setup nötig`);
+  }
+}
+
+async function loadAsana() {
+  const c = cfg();
+  if (!c.asana) {
+    makeRow('asana', 'grey', 'Asana Task-Sync', 'Projekt 1208078355892444',
+      '<span class="tag grey">FEHLT</span> Asana PAT konfigurieren', '—', 'unbekannt');
+    return;
+  }
+  makeRow('asana', 'grey', 'Asana Task-Sync', 'Projekt 1208078355892444', spin(), '—', 'live');
+  try {
+    const r = await fetch(`${ASANA_BASE}/projects/${ASANA_PROJECT}/tasks?opt_fields=name,completed,due_on&limit=100`, {
+      headers: { 'Authorization': `Bearer ${c.asana}` }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    const open = (d.data || []).filter(t => !t.completed);
+    const overdue = open.filter(t => t.due_on && new Date(t.due_on) < new Date()).length;
+    const dot = overdue > 0 ? 'red' : open.length > 5 ? 'yellow' : 'green';
+    const now = new Date().toLocaleString('de-CH', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    setResult('asana', dot,
+      `<b>${open.length}</b> offene Tasks${overdue > 0 ? ` · <span class="tag red">${overdue} überfällig</span>` : ''}`);
+    document.querySelector('#r_asana td.time').innerHTML = now + '<span class="ago">jetzt abgerufen</span>';
+  } catch(e) {
+    setResult('asana', 'red', `<span class="tag red">FEHLER</span> ${e.message}`);
+  }
+}
+
+async function loadCalendly() {
+  const c = cfg();
+  if (!c.cal) {
+    makeRow('cal', 'grey', 'Calendly Bookings', 'eingehende Termine',
+      '<span class="tag grey">FEHLT</span> Calendly PAT konfigurieren', '—', 'unbekannt');
+    return;
+  }
+  makeRow('cal', 'grey', 'Calendly Bookings', 'eingehende Termine', spin(), '—', 'live');
+  try {
+    const meR = await fetch('https://api.calendly.com/users/me', {
+      headers: { 'Authorization': 'Bearer ' + c.cal }
+    });
+    if (!meR.ok) throw new Error('HTTP ' + meR.status);
+    const me = await meR.json();
+    const uri = me.resource.uri;
+    const now = new Date();
+    const next7 = new Date(now.getTime() + 7*864e5).toISOString();
+    const past7 = new Date(now.getTime() - 7*864e5).toISOString();
+    const [upR, pastR] = await Promise.all([
+      fetch(`https://api.calendly.com/scheduled_events?user=${encodeURIComponent(uri)}&min_start_time=${now.toISOString()}&max_start_time=${next7}&status=active&count=100`, { headers: { 'Authorization': 'Bearer ' + c.cal } }),
+      fetch(`https://api.calendly.com/scheduled_events?user=${encodeURIComponent(uri)}&min_start_time=${past7}&max_start_time=${now.toISOString()}&status=active&count=100`, { headers: { 'Authorization': 'Bearer ' + c.cal } })
+    ]);
+    const up = (await upR.json()).collection?.length || 0;
+    const past = (await pastR.json()).collection?.length || 0;
+    const ts = now.toLocaleString('de-CH', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    setResult('cal', up > 0 ? 'green' : 'yellow',
+      `<b>${up}</b> Termine nächste 7T · <b>${past}</b> Gespräche letzte 7T`);
+    document.querySelector('#r_cal td.time').innerHTML = ts + '<span class="ago">jetzt abgerufen</span>';
+  } catch(e) {
+    setResult('cal', 'red', `<span class="tag red">FEHLER</span> ${e.message}`);
+  }
+}
+
+async function loadLeads() {
+  const c = cfg();
+  if (!c.wpUser || !c.wpPass) {
+    makeRow('leads', 'grey', 'CF7 Leads (Flamingo)', 'Kontaktformular → WP DB',
+      '<span class="tag grey">FEHLT</span> WP-Credentials konfigurieren', '—', 'unbekannt');
+    return;
+  }
+  makeRow('leads', 'grey', 'CF7 Leads (Flamingo)', 'Kontaktformular → WP DB', spin(), '—', 'live');
+  try {
+    const creds = btoa(c.wpUser + ':' + c.wpPass);
+    const since = new Date(Date.now() - 7*864e5).toISOString();
+    const r = await fetch(`https://brackmedia.ch/wp-json/flamingo/v2/inbound-messages?per_page=100&after=${encodeURIComponent(since)}`, {
+      headers: { 'Authorization': 'Basic ' + creds }
+    });
+    const ts = new Date().toLocaleString('de-CH', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    if (r.ok) {
+      const msgs = await r.json();
+      const count = Array.isArray(msgs) ? msgs.length : (msgs.total || 0);
+      setResult('leads', count > 0 ? 'green' : 'yellow',
+        `<b>${count}</b> Lead${count !== 1 ? 's' : ''} letzte 7 Tage`);
+      document.querySelector('#r_leads td.time').innerHTML = ts + '<span class="ago">jetzt abgerufen</span>';
+    } else if (r.status === 404) {
+      setResult('leads', 'yellow', `<span class="tag yellow">SETUP</span> <a href="https://brackmedia.ch/wp-admin/plugin-install.php?s=flamingo" target="_blank">Flamingo Plugin installieren →</a>`);
+      document.querySelector('#r_leads td.time').innerHTML = ts + '<span class="ago">Plugin fehlt</span>';
+    } else {
+      throw new Error('HTTP ' + r.status);
+    }
+  } catch(e) {
+    if (e.message === 'Failed to fetch') {
+      setResult('leads', 'yellow', `<span class="tag yellow">CORS</span> WP-CORS Setup nötig`);
+    } else {
+      setResult('leads', 'red', `<span class="tag red">FEHLER</span> ${e.message}`);
+    }
+  }
+}
+
+async function loadRevenue() {
+  const c = cfg();
+  if (!c.wpUser || !c.wpPass) {
+    makeRow('rev', 'grey', 'Umsatz Hub', 'WP Post 32449 · manueller Eintrag',
+      '<span class="tag grey">FEHLT</span> WP-Credentials konfigurieren', '—', 'unbekannt');
+    return;
+  }
+  makeRow('rev', 'grey', 'Umsatz Hub', 'WP Post 32449 · manueller Eintrag', spin(), '—', 'live');
+  try {
+    const creds = btoa(c.wpUser + ':' + c.wpPass);
+    const r = await fetch(`${WP_BASE}/posts/32449?context=edit`, { headers: { 'Authorization': 'Basic ' + creds } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const p = await r.json();
+    const raw = (p.content?.raw || p.content?.rendered || '').replace(/<[^>]+>/g, ' ');
+    const m = raw.match(/(?:Umsatz|Revenue|MRR)[:\s]+(?:CHF\s*)?([\d'.,]+)/i)
+           || raw.match(/CHF\s*([\d'.,]+(?:\s*[kK])?)/);
+    const mod = p.modified ? new Date(p.modified).toLocaleString('de-CH', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    if (m) {
+      setResult('rev', 'green', `<b>CHF ${m[1]}</b> · aus Post 32449`);
+    } else {
+      setResult('rev', 'yellow', `<span class="tag yellow">SETUP</span> "Umsatz: CHF X" in <a href="https://brackmedia.ch/wp-admin/post.php?post=32449&action=edit" target="_blank">Post 32449</a> eintragen`);
+    }
+    document.querySelector('#r_rev td.time').innerHTML = mod + '<span class="ago">letzte Änderung</span>';
+  } catch(e) {
+    setResult('rev', 'yellow', `<span class="tag yellow">CORS</span> WP-CORS Setup nötig`);
+  }
+}
+
+// Static automations (no live API)
+function loadStatic() {
+  makeRow('evo_auto', 'green', 'EVO Night Run', 'täglich 03:00 · Systemcheck automatisch',
+    '<b>Sauber</b> · kein Fehler beim letzten Lauf', '17.06.2026 03:00', 'gestern Nacht');
+
+  makeRow('gsc', 'yellow', 'GSC URL Queue', 'Google Search Console · Bing Submission',
+    '<b>6 URLs</b> warten auf Submission', '06.06.2026', 'vor 13 Tagen');
+
+  makeRow('magicpost', 'red', 'MagicPost', 'Content-Publikation via Plugin',
+    '<span class="tag red">NOTFALL</span> 19.06. nicht terminiert', '19.06.2026', 'heute');
+
+  makeRow('content', 'yellow', 'Content Queue', 'Posts WP 32451 · Planung',
+    '<b>2 Posts</b> geplant · 19.06. + 22.06.', '17.06.2026', 'vor 2 Tagen');
+
+  makeRow('geo', 'green', 'GEO Messung', 'AI-Sichtbarkeit · wöchentlich',
+    '<b>brackmedia</b> sichtbar · Non-Branded fehlt noch', '17.06.2026', 'vor 2 Tagen');
+
+  makeRow('gbp', 'green', 'GBP + Verzeichnisse', 'Google Business · local.ch · search.ch',
+    '<b>3/3</b> ✓ · Fotos + Rezensionen erledigt', '14.06.2026', 'vor 5 Tagen');
+
+  makeRow('rollback', 'yellow', 'Rollback Watch', 'Post 32349 Ranking-Monitor',
+    '<b>Pos 25 → 55</b> nach Title-Änderung · beobachten', '17.06.2026', 'läuft');
+}
+
+async function loadAll() {
+  document.getElementById('ts').textContent = 'lädt…';
+  rows.innerHTML = '';
+  loadStatic();
+  await Promise.all([loadEVO(), loadAsana(), loadCalendly(), loadLeads(), loadRevenue()]);
+  document.getElementById('ts').textContent =
+    'Stand: ' + new Date().toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+}
+
+loadAll();
+</script>
+</body>
+</html>
