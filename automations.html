@@ -6,213 +6,355 @@
 <title>Brackmedia · Automationen</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #0a0e1a; color: #f9fafb; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; }
+body { background: #f8fafc; color: #0f172a; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
 
 .topbar {
-  background: #111827; border-bottom: 1px solid #1f2937;
-  padding: 14px 24px; display: flex; align-items: center;
+  background: #fff; border-bottom: 1px solid #e2e8f0;
+  padding: 12px 24px; display: flex; align-items: center;
   justify-content: space-between; position: sticky; top: 0; z-index: 10;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
-.topbar h1 { font-size: 16px; font-weight: 700; letter-spacing: .5px; }
-.topbar h1 span { color: #3b82f6; }
-.btn { background: #1f2937; border: 1px solid #374151; color: #9ca3af;
-  border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 13px;
-  text-decoration: none; display: inline-block; }
-.btn:hover { border-color: #3b82f6; color: #3b82f6; }
+.topbar h1 { font-size: 15px; font-weight: 700; letter-spacing: .4px; color: #0f172a; }
+.topbar h1 span { color: #2563eb; }
+.btn { background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569;
+  border-radius: 8px; padding: 5px 12px; cursor: pointer; font-size: 12px;
+  text-decoration: none; display: inline-block; font-weight: 500; }
+.btn:hover { background: #e2e8f0; }
 
-.wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px; }
+/* Summary bar */
+.summary { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 16px 20px; margin: 20px 24px 0;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.summary-score { font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1; }
+.summary-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+.summary-divider { width: 1px; height: 36px; background: #e2e8f0; }
+.summary-stat { text-align: center; }
+.summary-stat .val { font-size: 18px; font-weight: 700; line-height: 1; }
+.summary-stat .lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
+.val.green { color: #16a34a; }
+.val.yellow { color: #ca8a04; }
+.val.red { color: #dc2626; }
+.summary-ts { margin-left: auto; font-size: 11px; color: #94a3b8; }
+.summary-refresh { margin-left: 8px; font-size: 11px; cursor: pointer; color: #2563eb; }
+
+.wrap { padding: 16px 24px 40px; }
 
 .section-label {
   font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; color: #4b5563;
-  padding: 18px 0 8px; border-bottom: 1px solid #1f2937; margin-bottom: 4px;
+  text-transform: uppercase; color: #94a3b8;
+  padding: 20px 0 8px;
 }
+
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  overflow: hidden; margin-bottom: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04); }
 
 table { width: 100%; border-collapse: collapse; }
-tbody tr { border-bottom: 1px solid #111827; transition: background .12s; cursor: default; }
-tbody tr:hover { background: #111827; }
-tbody td { padding: 13px 12px; vertical-align: middle; }
+tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f8fafc; }
+tbody td { padding: 11px 14px; vertical-align: middle; }
 
-td:first-child { width: 28px; }
-td:nth-child(2) { width: 220px; }
-td:nth-child(3) { width: 120px; }
-td:last-child { color: #9ca3af; font-size: 13px; }
+td.dot-cell { width: 32px; }
+td.name-cell { width: 210px; }
+td.takt-cell { width: 160px; }
+td.last-cell { width: 150px; }
+td.status-cell { width: 110px; }
+td.link-cell  { width: 80px; text-align: right; }
 
-.name { font-weight: 600; font-size: 14px; color: #f9fafb; }
-.takt { font-size: 12px; color: #6b7280; }
+.name { font-weight: 600; font-size: 13px; color: #0f172a; }
+.takt-txt { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.dot.green  { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
-.dot.yellow { background: #eab308; box-shadow: 0 0 6px #eab30888; }
-.dot.blue   { background: #3b82f6; box-shadow: 0 0 6px #3b82f688; }
-.dot.purple { background: #a855f7; box-shadow: 0 0 6px #a855f788; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot.green  { background: #22c55e; box-shadow: 0 0 0 3px #dcfce7; }
+.dot.yellow { background: #eab308; box-shadow: 0 0 0 3px #fefce8; }
+.dot.red    { background: #ef4444; box-shadow: 0 0 0 3px #fee2e2; }
+.dot.grey   { background: #cbd5e1; box-shadow: 0 0 0 3px #f1f5f9; }
 
-.badge {
+.last-time { font-size: 12px; font-weight: 600; color: #0f172a; }
+.last-ago  { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+
+.status-pill {
   display: inline-block; font-size: 10px; font-weight: 700;
-  padding: 2px 6px; border-radius: 4px; margin-left: 6px;
-  vertical-align: middle;
+  padding: 3px 8px; border-radius: 20px; letter-spacing: .3px;
 }
-.badge.daily  { background: rgba(34,197,94,.12); color: #22c55e; }
-.badge.weekly { background: rgba(234,179,8,.12);  color: #eab308; }
-.badge.monthly{ background: rgba(168,85,247,.12); color: #a855f7; }
+.pill-ok     { background: #dcfce7; color: #15803d; }
+.pill-warn   { background: #fefce8; color: #a16207; }
+.pill-late   { background: #fee2e2; color: #b91c1c; }
+.pill-soon   { background: #f1f5f9; color: #475569; }
+
+.link-btn { font-size: 11px; color: #2563eb; text-decoration: none; font-weight: 500; }
+.link-btn:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <h1>BRACKMEDIA <span>AUTOMATIONEN</span></h1>
-  <a href="index.html" class="btn">← Dashboard</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span id="ts" style="font-size:11px;color:#94a3b8;">—</span>
+    <button class="btn" onclick="init()">⟳</button>
+    <a href="index.html" class="btn">← Dashboard</a>
+  </div>
+</div>
+
+<div class="summary">
+  <div>
+    <div class="summary-score" id="scoreTotal">—</div>
+    <div class="summary-label">Automationen</div>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-stat"><div class="val green" id="scoreOk">—</div><div class="lbl">✓ OK</div></div>
+  <div class="summary-stat"><div class="val yellow" id="scoreWarn">—</div><div class="lbl">⚠ Prüfen</div></div>
+  <div class="summary-stat"><div class="val red" id="scoreLate">—</div><div class="lbl">✗ Überfällig</div></div>
+  <div class="summary-stat"><div class="val" style="color:#94a3b8" id="scoreSoon">—</div><div class="lbl">○ Noch nicht fällig</div></div>
+  <span class="summary-ts" id="summaryTs"></span>
 </div>
 
 <div class="wrap">
 
 <div class="section-label">Täglich</div>
-<table><tbody>
+<div class="card"><table><tbody id="daily"></tbody></table></div>
 
-<tr>
-  <td><span class="dot green"></span></td>
-  <td><div class="name">EVO Daily<span class="badge daily">täglich</span></div><div class="takt">03:00 — jeden Tag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-evo-daily" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Asana ↔ WP-Abgleich · falsche Eskalationen schliessen · Duplikate entfernen</td>
-</tr>
+<div class="section-label">Mo – Fr</div>
+<div class="card"><table><tbody id="mofr"></tbody></table></div>
 
-<tr>
-  <td><span class="dot green"></span></td>
-  <td><div class="name">Uptime Check<span class="badge daily">täglich</span></div><div class="takt">12:00 — jeden Tag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-uptime-check" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>90-Sek-Gesundheitscheck brackmedia.ch · Lead-Funnel · Alarm bei Ausfall</td>
-</tr>
-
-<tr>
-  <td><span class="dot green"></span></td>
-  <td><div class="name">Lead Intelligence<span class="badge daily">täglich</span></div><div class="takt">13:00 — jeden Tag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-lead-intelligence" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Welche Keywords/Seiten bringen Leads · Ergebnis ins Logbuch</td>
-</tr>
-
-<tr>
-  <td><span class="dot green"></span></td>
-  <td><div class="name">Design Jobs<span class="badge daily">täglich</span></div><div class="takt">16:00 — jeden Tag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/taegliche-design-jobs" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Frische Remote-Design-Stellen (CH/DE/AT/CZ) · deployt auf GitHub Pages</td>
-</tr>
-
-</tbody></table>
-
-<div class="section-label">Mo–Fr</div>
-<table><tbody>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">Autoblog<span class="badge weekly">Mo–Fr</span></div><div class="takt">07:00 — Wochentags</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-autoblog" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>1 Artikel publizieren · Foto + CTA + Meta · sofort EN + CZ Übersetzung</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">SEO Manager<span class="badge weekly">Mo/Mi/Fr</span></div><div class="takt">08:00 — Mo, Mi, Fr</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-seo-manager" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>SEO-Optimierung · 4 Datenquellen · Opportunity-Scores · Ziel: organische Leads</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">Backlog Translator<span class="badge weekly">Mo–Fr</span></div><div class="takt">09:30 — Wochentags</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-backlog-translator" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Fehlende EN- & CZ-Übersetzungen nachholen · URLs an GSC-Queue anhängen</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">GSC Indexer<span class="badge weekly">Mo–Fr</span></div><div class="takt">10:30 — Wochentags</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-gsc-indexer" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Neue Artikel + Queue-URLs → Google Search Console + Bing Webmaster einreichen</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">Revenue Loop<span class="badge weekly">Mo–Fr</span></div><div class="takt">14:00 — Wochentags</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-revenue-loop" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Calendly-Gespräche → auslösendem Artikel/Keyword zuordnen · Umsatz-Attribution</td>
-</tr>
-
-</tbody></table>
-
-<div class="section-label">Wöchentlich  (fixer Tag)</div>
-<table><tbody>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">LinkedIn Insights<span class="badge weekly">Mo</span></div><div class="takt">08:00 — Montag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-linkedin-insights" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Saras Wochenreport lesen → Insights an Jonas, Mila, Emma, Anna, Max verteilen</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">GEO Monitor<span class="badge weekly">Di</span></div><div class="takt">09:30 — Dienstag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-geo-monitor" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>KI-Sichtbarkeit prüfen (ChatGPT, Perplexity, AI Overviews) · GEO-Chancen erfassen</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">Conversion Specialist<span class="badge weekly">Do</span></div><div class="takt">09:00 — Donnerstag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-conversion-specialist" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Clarity-Analyse · Heatmaps, Rage-Clicks · CTA & Formular-Performance</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">Todo Sync<span class="badge weekly">Fr</span></div><div class="takt">16:00 — Freitag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-todo-sync" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Offene Todos aus Team-Berichten → Asana-Aufgaben (Frist +7 Tage)</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">Local SEO<span class="badge weekly">Sa</span></div><div class="takt">10:00 — Samstag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-local-seo" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Google Business · Maps · Rankings · Bewertungen · NAP · lokale Wettbewerber</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">LinkedIn Analyst<span class="badge weekly">So</span></div><div class="takt">07:00 — Sonntag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-linkedin-analyst" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>KPI-Wochenreport · Top/Flop-Posts · Empfehlungen + Monatsanalyse per Mail</td>
-</tr>
-
-<tr>
-  <td><span class="dot yellow"></span></td>
-  <td><div class="name">Reputation Manager<span class="badge weekly">So</span></div><div class="takt">10:00 — Sonntag</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-reputation-manager" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Erwähnungen (Brackmedia, InstaGrow, �Marcel) · Backlink- & Presse-Chancen</td>
-</tr>
-
-</tbody></table>
+<div class="section-label">Wochentlich (fixer Tag)</div>
+<div class="card"><table><tbody id="weekly"></tbody></table></div>
 
 <div class="section-label">Monatlich</div>
-<table><tbody>
-
-<tr>
-  <td><span class="dot purple"></span></td>
-  <td><div class="name">SEO Monatsreport<span class="badge monthly">1. des Monats</span></div><div class="takt">09:30 — 1. des Monats</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-seo-monatsreport" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>GSC + GA4 + Bing + Clarity · Wachstumsreport mit Ampel-Fazit per Mail</td>
-</tr>
-
-<tr>
-  <td><span class="dot purple"></span></td>
-  <td><div class="name">LinkedIn Creator<span class="badge monthly">25. des Monats</span></div><div class="takt">16:00 — am 25.</div></td>
-  <td><a href="https://claude.ai/scheduled-task/brackmedia-linkedin-creator" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;">→ Task</a></td>
-  <td>Komplette LinkedIn-Posts für Folgemonat produzieren (Mo/Mi/Fr) · Marcel gibt frei</td>
-</tr>
-
-</tbody></table>
+<div class="card"><table><tbody id="monthly"></tbody></table></div>
 
 </div>
-</body>
 
+<script>
+// ── Automation definitions ──────────────────────────────────────────────────
+// schedule types:
+//   { type:'daily', hour, min }
+//   { type:'weekdays', hour, min }       Mo–Fr
+//   { type:'days', days:[0..6], hour, min }   specific weekdays (0=Sun)
+//   { type:'monthly', day, hour, min }
+
+const AUTOMATIONS = [
+  // Daily
+  { id:'evo',         name:'EVO Daily',             takt:'Täglich 03:00',        schedule:{type:'daily'hour:3,min:0},    url:'brackmedia-evo-daily',         group:'daily' },
+  { id:'uptime',      name:'Uptime Check',           takt:'Täglich 12:00',        schedule:{type:'daily',hour:12,min:0},   url:'brackmedia-uptime-check',       group:'daily' },
+  { id:'lead',        name:'Lead Intelligence',      takt:'Täglich 13:00',        schedule:{type:'daily',hour:13,min:0},   url:'brackmedia-lead-intelligence',  group:'daily' },
+  { id:'oobs',        name:'Design Jobs',            takt:'Täglich 16:00',        schedule:{type:'daily',hour:16,min:0},   url:'taegliche-design-jobs',         group:'daily' },
+  // Mo–Fr
+  { id:'autoblog',    name:'Autoblog',               takt:'Mo–Fr 07:00',          schedule:{type:'weekdays',hour:7,min:0}, url:'brackmedia-autoblog',           group:'mofr' },
+  { id:'seo',         name:'SEO Manager',            takt:'Mo/Mi/Fr 08:00',       schedule:{type:'days',days:[1,3,5],hour:8,min:0}, url:'brackmedia-seo-manager', group:'mofr' },
+  { id:'trans',       name:'Backlog Translator',     takt:'Mo–Fr 09:30',          schedule:{type:'weekdays',hour:9,min:30},url:'brackmedia-backlog-translator', group:'mofr' },
+  { id:'gsc',         name:'GSC Indexer',            takt:'Mo–Fr 10:30',          schedule:{type:'weekdays',hour:10,min:30},url:'brackmedia-gsc-indexer',       group:'mofr' },
+  { id:'rev',         name:'Revenue Loop',           takt:'Mo–Fr 14:00',          schedule:{type:'weekdays',hour:14,min:0},url:'brackmedia-revenue-loop',       group:'mofr' },
+  // Weekly fixed day
+  { id:'li_ins',      name:'LinkedIn Insights',      takt:'Montag 08:00',         schedule:{type:'days',days:[1],hour:8,min:0},  url:'brackmedia-linkedin-insights',   group:'weekly' },
+  { id:'geo',         name:'GEO Monitor',            takt:'Dienstag 09:30',       schedule:{type:'days',days:[2],hour:9,min:30}, url:'brackmedia-geo-monitor',         group:'weekly' },
+  { id:'conv',        name:'Conversion Specialist',  takt:'Donnerstag 09:00',     schedule:{type:'days',days:[4],hour:9,min:0},  url:'brackmedia-conversion-specialist',group:'weekly'},
+  { id:'todo',        name:'Todo Sync',              takt:'Freitag 16:00',        schedule:{type:'days',days:[5],hour:16,min:0}, url:'brackmedia-todo-sync',           group:'weekly' },
+  { id:'local',       name:'Local SEO',              takt:'Samstag 10:00',        schedule:{type:'days',days:[6],hour:10,min:0}, url:'brackmedia-local-seo',           group:'weekly' },
+  { id:'li_ana',      name:'LinkedIn Analyst',       takt:'Sonntag 07:00',        schedule:{type:'days',days:[0],hour:7,min:0},  url:'brackmedia-linkedin-analyst',    group:'weekly'},
+  { id:'rep',         name:'Reputation Manager',     takt:'Sonntag 10:00',        schedule:{type:'days',days:[0],hour:10,min:0}, url:'brackmedia-reputation-manager',  group:'weekly' },
+  // Monthly
+  { id:'seo_rep',     name:'SEO Monatsreport',       takt:'1. des Monats 09:30',  schedule:{type:'monthly',day:1,hour:9,min:30}, url:'brackmedia-seo-monatsreport',    group:'monthly'},
+  { id:'li_cre',      name:'LinkedIn Creator',       takt:'25. des Monats 16:00', schedule:{type:'monthly',day:25,hour:16,min:0},url:'brackmedia-linkedin-creator',    group:'monthly'},
+];
+
+// ── Schedule calculator ─────────────────────────────────────────────────────
+function lastRun(s, now) {
+  const n = new Date(now);
+
+  if (s.type === 'daily') {
+    const t = new Date(n); t.setHours(s.hour, s.min, 0, 0);
+    if (t > n) t.setDate(t.getDate() - 1);
+    return t;
+  }
+
+  if (s.type === 'weekdays') {
+    const t = new Date(n); t.setHours(s.hour, s.min, 0, 0);
+    // go back until we hit a weekday where t <= now
+    let tries = 0;
+    while (tries++ < 10) {
+      const wd = t.getDay();
+      if (wd >= 1 && wd <= 5 && t <= n) return t;
+      t.setDate(t.getDate() - 1); t.setHours(s.hour, s.min, 0, 0);
+    }
+    return t;
+  }
+
+  if (s.type === 'days') {
+    const t = new Date(n); t.setHours(s.hour, s.min, 0, 0);
+    let tries = 0;
+    while (tries++ < 14) {
+      if (s.days.includes(t.getDay()) && t <= n) return t;
+      t.setDate(t.getDate() - 1); t.setHours(s.hour, s.min, 0, 0);
+    }
+    return t;
+  }
+
+  if (s.type === 'monthly') {
+    let t = new Date(n.getFullYear(), n.getMonth(), s.day, s.hour, s.min, 0);
+    if (t > n) t = new Date(n.getFullYear(), n.getMonth() - 1, s.day, s.hour, s.min, 0);
+    return t;
+  }
+}
+
+function nextRun(s, now) {
+  const n = new Date(now);
+
+  if (s.type === 'daily') {
+    const t = new Date(n); t.setHours(s.hour, s.min, 0, 0);
+    if (t <= n) t.setDate(t.getDate() + 1);
+    return t;
+  }
+
+  if (s.type === 'weekdays') {
+    const t = new Date(n); t.setHours(s.hour, s.min, 0, 0);
+    if (t <= n) t.setDate(t.getDate() + 1);
+    let tries = 0;
+    while (tries++ < 10) {
+      const wd = t.getDay();
+      if (wd >= 1 && wd <= 5) return t;
+      t.setDate(t.getDate() + 1); t.setHours(s.hour, s.min, 0, 0);
+    }
+    return t;
+  }
+
+  if (s.type === 'days') {
+    const t = new Date(n); t.setHours(s.hour, s.min, 0, 0);
+    if (t <= n) t.setDate(t.getDate() + 1);
+    let tries = 0;
+    while (tries++ < 14) {
+      if (s.days.includes(t.getDay())) return t;
+      t.setDate(t.getDate() + 1); t.setHours(s.hour, s.min, 0, 0);
+    }
+    return t;
+  }
+
+  if (s.type === 'monthly') {
+    let t = new Date(n.getFullYear(), n.getMonth(), s.day, s.hour, s.min, 0);
+    if (t <= n) t = new Date(n.getFullYear(), n.getMonth() + 1, s.day, s.hour, s.min, 0);
+    return t;
+  }
+}
+
+// ── Formatting ──────────────────────────────────────────────────────────────
+function fmtDate(d) {
+  const now = new Date();
+  const diff = now - d; // ms
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  const todayStr = new Date().toDateString();
+  const yestStr  = new Date(Date.now() - 86400000).toDateString();
+  const timeStr  = d.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+  const dateStr  = d.toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit'});
+
+  let label;
+  if (d.toDateString() === todayStr) label = `Heute ${timeStr}`;
+  else if (d.toDateString() === yestStr) label = `Gestern ${timeStr}`;
+  else label = `${dateStr} ${timeStr}`;
+
+  let ago;
+  if (mins < 60) ago = `vor ${mins} Min`;
+  else if (hours < 24) ago = `vor ${hours} Std`;
+  else if (days === 1) ago = 'vor 1 Tag';
+  else ago = `vor ${days} Tagen`;
+  
+  return { label, ago };
+}
+
+function fmtNext(d) {
+  const now = new Date();
+  const diff = d - now;
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  const timeStr = d.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+  const todayStr = new Date().toDateString();
+  const tomStr  = new Date(Date.now() + 86400000).toDateString();
+
+  if (d.toDateString() === todayStr) return `Heute ${timeStr}`;
+  if (d.toDateString() === tomStr)   return `Morgen ${timeStr}`;
+  const dow = ['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];
+  return `${dow} ${timeStr}`;
+}
+
+// ── Status logic ────────────────────────────────────────────────────────────
+// Grace period: how long after scheduled time before we flag as late
+function getStatus(s, now) {
+  const lr = lastRun(s, now);
+  const nr = nextRun(s, now);
+  const sinceLast = now - lr; // ms
+  const toNext = nr - now;
+
+  // Grace window: 90 min for hourly-ish, 4h for daily, 8h for weekly
+  let grace;
+  if (s.type === 'daily') grace = 4 * 3600000;
+  else if (s.type === 'weekdays') grace = 4 * 3600000;
+  else if (s.type === 'days') grace = 8 * 3600000;
+  else grace = 12 * 3600000;
+
+  // Next run is in less than grace → "noch nicht fällig" period
+  // This means: we're currently in the gap AFTER last run and BEFORE window closes
+  if (sinceLast <= grace) return 'ok';          // ran recently, within grace
+  if (toNext < 86400000 * 2) return 'soon';    // next run coming up normally
+  return 'late';                                 // overdue - shouldn't happen with scheduled tasks
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────
+function renderRow(a, now) {
+  const lr = lastRun(a.schedule, now);
+  const nr = nextRun(a.schedule, now);
+  const { label, ago } = fmtDate(lr);
+  const nextLabel = fmtNext(nr);
+  const status = getStatus(a.schedule, now);
+
+  const dotClass = status === 'ok' ? 'green' : status === 'late' ? 'red' : status === 'warn' ? 'yellow' : 'grey';
+  const pillClass = status === 'ok' ? 'pill-ok' : status === 'late' ? 'pill-late' : status === 'warn' ? 'pill-warn' : 'pill-soon';
+  const pillText  = status === 'ok' ? '✓ OK' : status === 'late' ? '✛ Überfällig' : status === 'warn' ? '➠ Prüfen' : `⟳ ${nextLabel}`;
+
+  return `<tr>
+    <td class="dot-cell"><span class="dot ${dotClass}"></span></td>
+    <td class="name-cell"><div class="name">${a.name}</div><div class="takt-txt">${a.takt}</div></td>
+    <td class="last-cell"><div class="last-time">${label}</div><div class="last-ago">${ago}</div></td>
+    <td class="status-cell"><span class="status-pill ${pillClass}">${pillText}</span></td>
+    <td class="link-cell"><a href="https://claude.ai/scheduled-task/${a.url}" target="_blank" class="link-btn">→ Task</a></td>
+  </tr>`;
+}
+
+function init() {
+  const now = new Date();
+  document.getElementById('ts').textContent = now.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('summaryTs').textContent = 'Stand: ' + now.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+
+  const groups = { daily:'', mofr:'', weekly::'', monthly:'' };
+  let ok=0, warn=0, late=0, soon=0;
+
+  AUTOMATIONS.forEach(a => {
+    groups[a.group] += renderRow(a, now);
+    const s = getStatus(a.schedule, now);
+    if (s==='ok') ok++;
+    else if (s==='warn') warn++;
+    else if (s==='late') late++;
+    else soon++;
+  });
+
+  ['daily','mofr','weekly','monthly'].forEach(g => {
+    document.getElementById(g).innerHTML = groups[g];
+  });
+
+  document.getElementById('scoreTotal').textContent = AUTOMATIONS.length;
+  document.getElementById('scoreOk').textContent    = ok;
+  document.getElementById('scoreWarn').textContent  = warn;
+  document.getElementById('scoreLate').textContent  = late;
+  document.getElementById('scoreSoon').textContent  = soon;
+}
+
+init();
+// Auto-refresh every 5 minutes
+setInterval(init, 300000);
+</script>
+</body>
 </html>
